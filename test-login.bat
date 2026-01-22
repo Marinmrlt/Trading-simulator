@@ -1,0 +1,5 @@
+@echo off
+curl.exe -X POST http://localhost:3000/auth/login ^
+  -H "Content-Type: application/json" ^
+  -d "{\"email\":\"trader1@test.com\", \"password\":\"password123\"}"
+pause
