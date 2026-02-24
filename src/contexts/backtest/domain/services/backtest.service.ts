@@ -37,10 +37,10 @@ export class BacktestService {
     }
 
     async runBacktest(dto: RunBacktestDto) {
-        const { symbol, timeframe, initialCapital, strategy: strategyName, parameters, limit, brokerId } = dto;
+        const { symbol, timeframe, initialCapital, strategy: strategyName, parameters, limit, brokerId, provider } = dto;
 
         // 1. Fetch History
-        const candles = await this.marketService.getCandles(symbol, timeframe, limit || 100);
+        const candles = await this.marketService.getCandles(symbol, timeframe, limit || 100, provider);
 
         if (candles.length < 10) throw new BadRequestException('Not enough data for backtest');
 
@@ -113,6 +113,20 @@ export class BacktestService {
         // 6. Advanced Metrics
         const metrics = calculateMetrics(initialCapital, finalEquity, trades, equityCurve);
 
+        // 7. Extract Charting Data
+        const chartCandles = candles.map(c => ({
+            time: Math.floor(c.timestamp.getTime() / 1000),
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+        }));
+
+        let indicators = {};
+        if (strategy.getParsedIndicators) {
+            indicators = strategy.getParsedIndicators(candles);
+        }
+
         return {
             strategy: strategyName,
             broker: effectiveBrokerId,
@@ -125,6 +139,8 @@ export class BacktestService {
             trades,
             equityCurve,
             drawdownCurve: metrics.maxDrawdown.drawdownCurve,
+            chartCandles,
+            indicators
         };
     }
 }

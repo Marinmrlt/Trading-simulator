@@ -23,4 +23,9 @@ export interface IStrategy {
      * Decide action for a specific candle index
      */
     onCandle(index: number, candle: Candle, position: number, balance: number): StrategySignal;
+
+    /**
+     * Optional: Return parsed indicator series formatted as {time: number, value: any} for frontend charting
+     */
+    getParsedIndicators?(candles: Candle[]): Record<string, any[]>;
 }

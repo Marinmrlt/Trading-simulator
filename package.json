@@ -51,7 +51,8 @@
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",
     "technicalindicators": "^3.1.0",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "yahoo-finance2": "^3.13.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

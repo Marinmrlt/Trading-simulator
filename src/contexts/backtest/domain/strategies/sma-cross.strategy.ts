@@ -34,10 +34,10 @@ export class SmaCrossStrategy implements IStrategy {
         // smaShort[0] corresponds to closePrices[shortPeriod - 1]
         // We need index i corresponding to smaShort[i - shortPeriod]
 
-        const shortVal = this.smaShort[index - shortPeriod];
-        const longVal = this.smaLong[index - longPeriod];
-        const prevShort = this.smaShort[index - shortPeriod - 1];
-        const prevLong = this.smaLong[index - longPeriod - 1];
+        const shortVal = this.smaShort[index - shortPeriod + 1];
+        const longVal = this.smaLong[index - longPeriod + 1];
+        const prevShort = this.smaShort[index - shortPeriod];
+        const prevLong = this.smaLong[index - longPeriod];
 
         if (!shortVal || !longVal || !prevShort || !prevLong) {
             return { action: 'HOLD' };

@@ -8,16 +8,20 @@ export class AssetPresenter {
     @ApiProperty({ example: 'Bitcoin' })
     name: string;
 
-    @ApiProperty({ example: '$50000.00' })
-    price: string;
+    @ApiProperty({ example: 50000.00 })
+    price: number;
 
-    @ApiProperty({ example: '+2.50%' })
-    change: string;
+    @ApiProperty({ example: 2.50 })
+    change24h: number;
+
+    @ApiProperty({ example: 'yahoo', description: 'The market data provider for this asset' })
+    provider: string;
 
     constructor(asset: AssetEntity) {
         this.symbol = asset.symbol;
         this.name = asset.name;
-        this.price = `$${asset.price.toFixed(2)}`;
-        this.change = `${asset.change24h > 0 ? '+' : ''}${asset.change24h.toFixed(2)}%`;
+        this.price = Number(asset.price);
+        this.change24h = Number(asset.change24h);
+        this.provider = asset.provider;
     }
 }

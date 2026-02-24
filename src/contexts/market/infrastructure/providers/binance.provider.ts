@@ -9,8 +9,8 @@ export class BinanceMarketDataProvider implements IMarketDataProvider {
     private readonly BINANCE_API = 'https://api.binance.com/api/v3';
 
     async getTicker(symbol: string): Promise<Ticker> {
-        // Binance specific endpoint for single symbol
-        const pair = `${symbol}USDT`;
+        // Convert DB symbol (e.g. BTC/USD or BTC-USD) to Binance pair (BTCUSDT)
+        const pair = symbol.toUpperCase().replace('/USD', 'USDT').replace('-USD', 'USDT').replace('/', '');
         try {
             const response = await axios.get(`${this.BINANCE_API}/ticker/24hr`, {
                 params: { symbol: pair }
@@ -38,11 +38,13 @@ export class BinanceMarketDataProvider implements IMarketDataProvider {
             // Better to process here to return standard Ticker objects.
 
             return data.map((t: any) => {
-                // heuristic to extract symbol from pair? e.g. BTCUSDT -> BTC
-                // For now, let's keep the pair name or try to parse if it ends with USDT
                 let symbol = t.symbol;
                 if (symbol.endsWith('USDT')) {
-                    symbol = symbol.replace('USDT', '');
+                    // Map back to DB symbol format
+                    symbol = symbol.replace('USDT', '/USD');
+                } else {
+                    // Keep only USDT pairs for simulator
+                    return null;
                 }
 
                 const price = parseFloat(t.lastPrice);
@@ -72,7 +74,15 @@ export class BinanceMarketDataProvider implements IMarketDataProvider {
             const validIntervals = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w'];
             const validInterval = validIntervals.includes(interval) ? interval : '1h';
 
-            const pair = `${symbol}USDT`;
+            // Convert DB symbol to Binance pair (e.g BTC-USD -> BTCUSDT, BTC/USDT -> BTCUSDT)
+            let pair = symbol.toUpperCase();
+            if (pair.includes('-USD') || pair.includes('/USD')) {
+                pair = pair.replace('/USD', 'USDT').replace('-USD', 'USDT').replace('/', '');
+            } else if (!pair.endsWith('USDT') && !pair.endsWith('BTC') && !pair.endsWith('ETH')) {
+                // If it's a naked symbol like 'BTC', assume USDT pair for Binance
+                pair += 'USDT';
+            }
+
             const response = await axios.get(`${this.BINANCE_API}/klines`, {
                 params: {
                     symbol: pair,

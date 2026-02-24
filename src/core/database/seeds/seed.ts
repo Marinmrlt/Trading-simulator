@@ -27,11 +27,13 @@ async function runSeed() {
         // 1. Seed Assets
         console.log('Seeding Assets...');
         const initialAssets = [
-            { symbol: 'BTC/USD', name: 'Bitcoin', price: 95000, change24h: 2.5 },
-            { symbol: 'ETH/USD', name: 'Ethereum', price: 3200, change24h: 1.2 },
-            { symbol: 'EUR/USD', name: 'Euro', price: 1.08, change24h: -0.1 },
-            { symbol: 'AAPL', name: 'Apple Inc.', price: 190.50, change24h: 0.5 },
-            { symbol: 'TSLA', name: 'Tesla Inc.', price: 210.20, change24h: -1.5 },
+            { symbol: 'BTC-USD', name: 'Bitcoin', price: 95000, change24h: 2.5, provider: 'binance' },
+            { symbol: 'ETH-USD', name: 'Ethereum', price: 3200, change24h: 1.2, provider: 'binance' },
+            { symbol: 'SOL-USD', name: 'Solana', price: 140, change24h: 3.1, provider: 'binance' },
+            { symbol: 'AAPL', name: 'Apple Inc.', price: 190.50, change24h: 0.5, provider: 'yahoo' },
+            { symbol: 'TSLA', name: 'Tesla Inc.', price: 210.20, change24h: -1.5, provider: 'yahoo' },
+            { symbol: 'MSFT', name: 'Microsoft', price: 420.00, change24h: 0.8, provider: 'yahoo' },
+            { symbol: 'NVDA', name: 'Nvidia', price: 130.00, change24h: 2.1, provider: 'yahoo' },
         ];
 
         for (const assetData of initialAssets) {
@@ -40,6 +42,10 @@ async function runSeed() {
                 const asset = new AssetEntity(assetData);
                 await assetRepo.save(asset);
                 console.log(`➕ Added Asset: ${asset.symbol}`);
+            } else {
+                existing.provider = assetData.provider;
+                await assetRepo.save(existing);
+                console.log(`🔄 Updated Asset Provider: ${existing.symbol} -> ${existing.provider}`);
             }
         }
 

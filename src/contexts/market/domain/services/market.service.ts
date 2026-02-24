@@ -14,8 +14,8 @@ export class MarketService implements OnModuleInit {
     constructor(
         @Inject('MARKET_REPOSITORY')
         private readonly assetRepository: IMarketRepository,
-        @Inject('MARKET_DATA_PROVIDER')
-        private readonly marketDataProvider: IMarketDataProvider,
+        @Inject('PROVIDER_REGISTRY')
+        private readonly providerRegistry: Record<string, IMarketDataProvider>,
         private readonly marketGateway: MarketGateway,
         private readonly eventEmitter: EventEmitter2,
     ) { }
@@ -47,32 +47,54 @@ export class MarketService implements OnModuleInit {
         const assets = await this.assetRepository.find();
         const updates: AssetEntity[] = [];
 
-        try {
-            // Fetch ALL symbols from provider
-            const tickers = await this.marketDataProvider.getAllTickers();
-
-            for (const asset of assets) {
-                // Provider returns clean symbol (e.g. BTC) or we match against pair?
-                // BinanceProvider implementation returns "BTC" for "BTCUSDT".
-                // Our AssetEntity has symbol "BTC".
-
-                const ticker = tickers.find((t) => t.symbol === asset.symbol);
-
-                if (ticker && !isNaN(ticker.price) && ticker.price > 0) {
-                    asset.price = ticker.price;
-                    asset.change24h = ticker.change24h;
-
-                    updates.push(asset);
-
-                    // Emit via WebSocket
-                    this.marketGateway.emitTicker(asset.symbol, asset.price);
-
-                    // Emit to Internal System (Trading Engine)
-                    this.eventEmitter.emit('price.update', { symbol: asset.symbol, price: asset.price });
-                }
+        // Group assets by provider
+        const assetsByProvider: Record<string, AssetEntity[]> = {};
+        for (const asset of assets) {
+            const providerName = asset.provider || 'yahoo';
+            if (!assetsByProvider[providerName]) {
+                assetsByProvider[providerName] = [];
             }
+            assetsByProvider[providerName].push(asset);
+        }
 
-            // Save batch
+        try {
+            await Promise.all(Object.entries(assetsByProvider).map(async ([providerName, providerAssets]) => {
+                const provider = this.providerRegistry[providerName] || this.providerRegistry['yahoo'];
+
+                let tickers: any[] = [];
+                // Try batch first if supported
+                if (typeof (provider as any).getBatchTickers === 'function') {
+                    tickers = await (provider as any).getBatchTickers(providerAssets.map(a => a.symbol));
+                } else {
+                    tickers = await provider.getAllTickers();
+                }
+
+                for (const asset of providerAssets) {
+                    let ticker = tickers.find((t) => t.symbol === asset.symbol);
+
+                    // Fallback to individual getTicker if not found
+                    if (!ticker && typeof (provider as any).getBatchTickers !== 'function') {
+                        try {
+                            ticker = await provider.getTicker(asset.symbol);
+                        } catch (e) { /* ignore */ }
+                    }
+
+                    if (ticker && !isNaN(ticker.price) && ticker.price > 0) {
+                        asset.price = ticker.price;
+                        asset.change24h = ticker.change24h;
+
+                        updates.push(asset);
+
+                        // Emit via WebSocket
+                        this.marketGateway.emitTicker(asset.symbol, asset.price);
+
+                        // Emit to Internal System (Trading Engine)
+                        this.eventEmitter.emit('price.update', { symbol: asset.symbol, price: asset.price });
+                    }
+                }
+            }));
+
+            // Save all batch updates
             if (updates.length > 0) {
                 await this.assetRepository.save(updates);
             }
@@ -92,9 +114,12 @@ export class MarketService implements OnModuleInit {
     }
 
     // Real Candle Data (K-Lines)
-    public async getCandles(symbol: string, timeframe: string, limit: number = 100): Promise<Candle[]> {
+    public async getCandles(symbol: string, timeframe: string, limit: number = 100, providerOverride?: string): Promise<Candle[]> {
         try {
-            return await this.marketDataProvider.getKlines(symbol, timeframe, limit);
+            const asset = await this.assetRepository.findBySymbol(symbol);
+            const providerName = providerOverride || asset?.provider || 'yahoo';
+            const provider = this.providerRegistry[providerName] || this.providerRegistry['yahoo'];
+            return await provider.getKlines(symbol, timeframe, limit);
         } catch (error) {
             this.logger.error(`Failed to fetch candles: ${error.message}`);
             throw new MarketDataUnavailableError({ internal: error.message });

@@ -3,6 +3,7 @@ import { IStrategy } from './strategy.interface';
 import { SmaCrossStrategy } from './sma-cross.strategy';
 import { RsiStrategy } from './rsi.strategy';
 import { MacdStrategy } from './macd.strategy';
+import { MultiConfirmStrategy } from './multi-confirm.strategy';
 
 @Injectable()
 export class StrategyRegistry {
@@ -12,6 +13,7 @@ export class StrategyRegistry {
         this.register(new SmaCrossStrategy());
         this.register(new RsiStrategy());
         this.register(new MacdStrategy());
+        this.register(new MultiConfirmStrategy());
     }
 
     register(strategy: IStrategy) {
@@ -37,6 +39,7 @@ export class StrategyRegistry {
         if (name === 'SMA_CROSS') return new SmaCrossStrategy();
         if (name === 'RSI') return new RsiStrategy();
         if (name === 'MACD') return new MacdStrategy();
+        if (name === 'MULTI_CONFIRM') return new MultiConfirmStrategy();
 
         throw new Error(`Strategy ${name} not implemented in factory`);
     }

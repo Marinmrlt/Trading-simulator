@@ -14,6 +14,9 @@ export class AssetEntity {
     @Column('float')
     change24h: number;
 
+    @Column({ default: 'yahoo' })
+    provider: string; // e.g., 'binance', 'yahoo', 'kraken', 'coinbase'
+
     @UpdateDateColumn()
     updatedAt: Date;
 

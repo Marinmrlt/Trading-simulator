@@ -30,4 +30,9 @@ export class RunBacktestDto {
     @IsString()
     @IsOptional()
     brokerId?: string;
+
+    @ApiProperty({ example: 'yahoo', required: false, description: 'Market Data Provider Override' })
+    @IsString()
+    @IsOptional()
+    provider?: string;
 }

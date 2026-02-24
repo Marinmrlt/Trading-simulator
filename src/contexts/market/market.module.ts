@@ -18,23 +18,24 @@ import { MarketGateway } from './infrastructure/gateway/market.gateway';
 import { BinanceMarketDataProvider } from './infrastructure/providers/binance.provider';
 import { KrakenMarketDataProvider } from './infrastructure/providers/kraken.provider';
 import { CoinbaseMarketDataProvider } from './infrastructure/providers/coinbase.provider';
+import { YahooMarketDataProvider } from './infrastructure/providers/yahoo.provider';
 
-const MarketDataProviderFactory = {
-  provide: 'MARKET_DATA_PROVIDER',
+const ProviderRegistryFactory = {
+  provide: 'PROVIDER_REGISTRY',
   useFactory: (
     binance: BinanceMarketDataProvider,
     kraken: KrakenMarketDataProvider,
     coinbase: CoinbaseMarketDataProvider,
-    config: ConfigService,
+    yahoo: YahooMarketDataProvider,
   ) => {
-    const provider = config.get<string>('MARKET_PROVIDER', 'binance');
-    switch (provider) {
-      case 'kraken': return kraken;
-      case 'coinbase': return coinbase;
-      default: return binance;
-    }
+    return {
+      binance,
+      kraken,
+      coinbase,
+      yahoo,
+    };
   },
-  inject: [BinanceMarketDataProvider, KrakenMarketDataProvider, CoinbaseMarketDataProvider, ConfigService],
+  inject: [BinanceMarketDataProvider, KrakenMarketDataProvider, CoinbaseMarketDataProvider, YahooMarketDataProvider],
 };
 
 @Module({
@@ -47,11 +48,12 @@ const MarketDataProviderFactory = {
     BinanceMarketDataProvider,
     KrakenMarketDataProvider,
     CoinbaseMarketDataProvider,
+    YahooMarketDataProvider,
     {
       provide: 'MARKET_REPOSITORY',
       useClass: MarketRepository,
     },
-    MarketDataProviderFactory,
+    ProviderRegistryFactory,
   ],
   exports: [MarketService, MarketGateway, AlertService],
 })
