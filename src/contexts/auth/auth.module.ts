@@ -3,13 +3,21 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { AuthRepository } from './repositories/auth.repository';
-import { UserCredentialEntity } from './entities/user-credential.entity';
-import { UserEntity } from '../users/user.entity';
-import { JwtStrategy } from './strategies/jwt.strategy';
-import { RtStrategy } from './strategies/rt.strategy';
+
+// Application
+import { AuthController } from './application/controllers/auth.controller';
+
+// Domain
+import { AuthService } from './domain/services/auth.service';
+
+// Infrastructure
+import { AuthRepository } from './infrastructure/repositories/auth.repository';
+import { UserCredentialEntity } from './infrastructure/entities/user-credential.entity';
+import { UserEntity } from '../users/infrastructure/entities/user.entity';
+import { JwtStrategy } from './infrastructure/strategies/jwt.strategy';
+import { RtStrategy } from './infrastructure/strategies/rt.strategy';
+
+// Cross-module
 import { WalletModule } from '../wallet/wallet.module';
 
 @Module({

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
@@ -12,6 +11,8 @@ import { MarketModule } from './contexts/market/market.module';
 import { TradeModule } from './contexts/trade/trade.module';
 import { TechnicalAnalysisModule } from './contexts/technical-analysis/technical-analysis.module';
 import { BacktestModule } from './contexts/backtest/backtest.module';
+import { MailModule } from './core/mail/mail.module';
+import { DatabaseModule } from './core/database/database.module';
 
 import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -22,19 +23,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
     ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'sqlite',
-        database: config.get<string>('DB_DATABASE'),
-        synchronize: config.get<string>('DB_SYNCHRONIZE') === 'true',
-        logging: config.get<string>('DB_LOGGING') === 'true',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        migrations: [__dirname + '/migrations/*{.ts,.js}'],
-        migrationsRun: config.get<string>('DB_MIGRATIONS_RUN') === 'true',
-      }),
-    }),
+    DatabaseModule,
     AuthModule,
     UsersModule,
     WalletModule,
@@ -42,6 +31,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     TradeModule,
     TechnicalAnalysisModule,
     BacktestModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [

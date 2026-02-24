@@ -1,22 +1,33 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WalletController } from './wallet.controller';
-import { WalletService } from './wallet.service';
-import { WalletEntity } from './wallet.entity';
-import { WalletRepository } from './repositories/wallet.repository';
-import { TransactionEntity } from './transaction.entity';
-import { TransactionRepository } from './repositories/transaction.repository';
+
+// Application
+import { WalletController } from './application/controllers/wallet.controller';
+
+// Domain
+import { WalletService } from './domain/services/wallet.service';
+import { EquitySnapshotService } from './domain/services/equity-snapshot.service';
+
+// Infrastructure
+import { WalletEntity } from './infrastructure/entities/wallet.entity';
+import { TransactionEntity } from './infrastructure/entities/transaction.entity';
+import { EquitySnapshotEntity } from './infrastructure/entities/equity-snapshot.entity';
+import { WalletRepository } from './infrastructure/repositories/wallet.repository';
+import { TransactionRepository } from './infrastructure/repositories/transaction.repository';
+
+// Cross-module
 import { MarketModule } from '../market/market.module';
-import { MarketService } from '../market/market.service';
+import { MarketService } from '../market/domain/services/market.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([WalletEntity, TransactionEntity]),
+    TypeOrmModule.forFeature([WalletEntity, TransactionEntity, EquitySnapshotEntity]),
     forwardRef(() => MarketModule),
   ],
   controllers: [WalletController],
   providers: [
     WalletService,
+    EquitySnapshotService,
     {
       provide: 'WALLET_REPOSITORY',
       useClass: WalletRepository,
@@ -30,7 +41,6 @@ import { MarketService } from '../market/market.service';
       useExisting: MarketService,
     },
   ],
-  exports: [WalletService],
+  exports: [WalletService, EquitySnapshotService],
 })
 export class WalletModule { }
-

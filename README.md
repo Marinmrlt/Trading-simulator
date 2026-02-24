@@ -1,98 +1,220 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📈 Trading Simulator
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A full-featured **crypto trading simulator** built with NestJS, TypeORM, and real-time market data from Binance, Kraken, or Coinbase.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Paper trade with **$10,000 virtual USD**, track performance, run backtests, and compete on the leaderboard — all without risking real money.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## ✨ Features
 
-## Project setup
+### Core Trading
+- **Market & Limit orders** with fee simulation (multi-broker: Binance, Kraken, Coinbase, Fixed)
+- **Stop Loss / Take Profit** with automatic trigger via trade monitor
+- **Trailing Stop** — dynamic SL that follows peak price by offset %
+- **OCO Orders** — One Cancels Other (linked SL + TP, auto-cancel on trigger)
+- **Order types**: GTC, GTD (expiry date), IOC (immediate or cancel)
+- **Simulated slippage** — ±0.1% random price deviation for realism
 
-```bash
-$ npm install
-```
+### Risk Management
+- **Max position size** — limit single order to X% of portfolio value
+- **Daily loss limit** — stop trading after $X realized losses per day
+- **Configurable per user** via `PUT /trade/risk`
 
-## Compile and run the project
+### Wallet & Portfolio
+- **Auto-created $10,000 USD** wallet on registration
+- **Deposit, withdraw, lock/unlock** funds
+- **Portfolio summary** with live USD valuation
+- **Equity curve** — hourly portfolio snapshots for historical tracking
+- **Account reset** — wipe and restart with $10k
 
-```bash
-# development
-$ npm run start
+### Market Data
+- **Real-time prices** via WebSocket (3s polling)
+- **Multi-exchange support** — Binance (default), Kraken, Coinbase
+- **OHLCV candle data** for charting
+- **Custom price alerts** — "Notify me when BTC > $100k" (WebSocket push)
 
-# watch mode
-$ npm run start:dev
+### Analytics
+- **Performance dashboard** — win rate, avg P&L, total P&L, Sharpe ratio
+- **Leaderboard** — rank all users by total P&L
+- **Backtesting engine** — SMA crossover strategy on historical data
+- **Technical analysis** — RSI, SMA, EMA, Bollinger Bands, MACD
 
-# production mode
-$ npm run start:prod
-```
+### Infrastructure
+- **JWT authentication** with refresh tokens
+- **Rate limiting** — global 100 req/min, auth endpoints 10 req/min
+- **Helmet** security headers
+- **API versioning** — `/api/v1` prefix
+- **Database migrations** support (TypeORM)
+- **Swagger API docs** — auto-generated at `/api/docs`
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## 🚀 Quick Start
 
-# e2e tests
-$ npm run test:e2e
+### Prerequisites
+- Node.js ≥ 18
+- npm
 
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Installation
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+git clone <repo-url>
+cd trading-simulator
+npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Configuration
 
-## Resources
+Create a `.env` file at the root:
 
-Check out a few resources that may come in handy when working with NestJS:
+```env
+PORT=3000
+DB_DATABASE=trading.db
+DB_SYNCHRONIZE=true
+DB_LOGGING=false
+DB_MIGRATIONS_RUN=false
+CORS_ORIGIN=*
+EXCHANGE_MODE=PAPER
+MARKET_PROVIDER=binance
+JWT_SECRET=your-secret-key
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Run
 
-## Support
+```bash
+# Development (watch mode)
+npm run start:dev
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+# Production
+npm run build
+npm run start:prod
+```
 
-## Stay in touch
+### Swagger Docs
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Open [http://localhost:3000/api/docs](http://localhost:3000/api/docs) after starting the server.
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📡 API Endpoints
+
+### Auth
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/auth/register` | Create account |
+| POST | `/api/v1/auth/login` | Login (returns JWT) |
+
+### Market (public)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/market/assets` | All tracked assets |
+| GET | `/api/v1/market/price/:symbol` | Single asset price |
+| GET | `/api/v1/market/candles` | OHLCV candle data |
+
+### Market — Alerts (authenticated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/market/alerts` | Create price alert |
+| GET | `/api/v1/market/alerts` | List my alerts |
+| DELETE | `/api/v1/market/alerts/:id` | Delete alert |
+
+### Trade (authenticated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/trade/order` | Place market/limit order |
+| POST | `/api/v1/trade/oco` | Place OCO (SL + TP) |
+| GET | `/api/v1/trade/orders` | Order history |
+| GET | `/api/v1/trade/positions` | Open positions |
+| GET | `/api/v1/trade/risk` | View risk settings |
+| PUT | `/api/v1/trade/risk` | Update risk settings |
+| GET | `/api/v1/trade/performance` | Performance metrics |
+| GET | `/api/v1/trade/leaderboard` | P&L leaderboard |
+| DELETE | `/api/v1/trade/order/:id` | Cancel order |
+
+### Wallet (authenticated)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/wallet` | Wallet balances |
+| GET | `/api/v1/wallet/portfolio` | Portfolio (USD value) |
+| GET | `/api/v1/wallet/equity-curve` | Equity curve history |
+| GET | `/api/v1/wallet/transactions` | Transaction history |
+| POST | `/api/v1/wallet/deposit` | Deposit funds |
+| POST | `/api/v1/wallet/withdraw` | Withdraw funds |
+| POST | `/api/v1/wallet/reset` | Reset to $10k |
+
+### Backtest
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/backtest/run` | Run SMA strategy |
+
+---
+
+## 🔌 WebSocket Events
+
+Connect to `ws://localhost:3000` for real-time updates:
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `ticker` | `{ symbol, price }` | Price updates (3s) |
+| `orderUpdate` | `{ orderId, status, ... }` | Order fill/cancel |
+| `tradeAlert` | `{ type, symbol, ... }` | SL/TP/Trailing/OCO/Alert triggers |
+
+---
+
+## ⚙️ Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Server port |
+| `DB_DATABASE` | — | SQLite database file path |
+| `DB_SYNCHRONIZE` | `true` | Auto-sync schema (disable in prod) |
+| `DB_LOGGING` | `false` | SQL query logging |
+| `DB_MIGRATIONS_RUN` | `false` | Auto-run migrations on start |
+| `EXCHANGE_MODE` | `PAPER` | `PAPER` or `LIVE` |
+| `MARKET_PROVIDER` | `binance` | `binance`, `kraken`, or `coinbase` |
+| `CORS_ORIGIN` | `*` | CORS allowed origin |
+| `JWT_SECRET` | — | JWT signing secret |
+
+---
+
+## 🏗️ Architecture
+
+src/
+├── contexts/                 # Modular Bounded Contexts
+│   ├── auth/                 # Authentication & Authorization
+│   ├── users/                # User Management
+│   ├── wallet/               # Wallet & Portfolio Management
+│   ├── market/               # Market Data (aggregators, alerts)
+│   ├── trade/                # Trading Engine (orders, risk, brokers)
+│   ├── backtest/             # Backtesting Engine
+│   └── technical-analysis/   # TA Indicators (RSI, MACD, etc.)
+│   │
+│   └── [module]/             # Standard 3-Layer Architecture
+│       ├── domain/           # Business Logic (Enterprise Rules)
+│       │   ├── models/       # Pure interfaces/types
+│       │   ├── ports/        # Repository/Service interfaces
+│       │   ├── errors/       # Domain-specific errors
+│       │   └── services/     # Pure business logic services
+│       ├── infrastructure/   # Implementation Details
+│       │   ├── entities/     # Database entities (TypeORM)
+│       │   ├── repositories/ # Repository implementations
+│       │   └── adapters/     # External service adapters
+│       └── application/      # Application Logic
+│           ├── controllers/  # HTTP Controllers
+│           ├── dto/          # Data Transfer Objects
+│           └── presenters/   # Response formatting
+│
+├── core/                     # Shared Kernel
+│   ├── decorators/           # Custom decorators
+│   ├── errors/               # Base DomainError
+│   ├── filters/              # Exception filters
+│   └── interceptors/         # Response interceptors
+│
+└── main.ts                   # Application Entry Point
+
+---
+
+## 📝 License
+
+MIT

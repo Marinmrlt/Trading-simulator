@@ -1,16 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { TradeController } from './trade.controller';
-import { TradeService } from './trade.service';
-import { TradeMonitorService } from './trade-monitor.service';
-import { OrderEntity } from './order.entity';
-import { TradeRepository } from './repositories/trade.repository';
+
+// Application
+import { TradeController } from './application/controllers/trade.controller';
+
+// Domain
+import { TradeService } from './domain/services/trade.service';
+import { TradeMonitorService } from './domain/services/trade-monitor.service';
+import { RiskService } from './domain/services/risk.service';
+import { BrokerService } from './domain/services/broker.service';
+
+// Infrastructure
+import { OrderEntity } from './infrastructure/entities/order.entity';
+import { RiskEntity } from './infrastructure/entities/risk.entity';
+import { TradeRepository } from './infrastructure/repositories/trade.repository';
+import { PaperTradingAdapter } from './infrastructure/adapters/paper-trading.adapter';
+import { BinanceAdapter } from './infrastructure/adapters/binance.adapter';
+
+// Cross-module
 import { MarketModule } from '../market/market.module';
 import { WalletModule } from '../wallet/wallet.module';
-import { BrokerService } from './brokers/broker.service';
-import { PaperTradingAdapter } from './adapters/paper-trading.adapter';
-import { BinanceAdapter } from './adapters/binance.adapter';
 
 const ExchangeAdapterFactory = {
   provide: 'IExchangeAdapter',
@@ -23,7 +33,7 @@ const ExchangeAdapterFactory = {
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([OrderEntity]),
+    TypeOrmModule.forFeature([OrderEntity, RiskEntity]),
     MarketModule,
     WalletModule
   ],
@@ -31,6 +41,7 @@ const ExchangeAdapterFactory = {
   providers: [
     TradeService,
     TradeMonitorService,
+    RiskService,
     BrokerService,
     {
       provide: 'TRADE_REPOSITORY',
@@ -40,6 +51,6 @@ const ExchangeAdapterFactory = {
     BinanceAdapter,
     ExchangeAdapterFactory,
   ],
-  exports: [TradeService, TradeMonitorService, BrokerService],
+  exports: [TradeService, TradeMonitorService, BrokerService, RiskService],
 })
 export class TradeModule { }
